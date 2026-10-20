@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>vallpaper.store · Hardware preview</title>
+<link rel="icon" href="data:,">
+<style>
+  body { margin:0;min-height:100vh;display:grid;place-content:center;gap:16px;background:#17191b;color:#e9edef;font:13px system-ui,sans-serif; }
+  article { width:350px;border:1px solid #59616a;border-radius:8px;overflow:hidden; }
+  h1 { font:600 14px system-ui;margin:0;padding:11px 14px;background:#30363c; }
+  #mount { height:350px; }
+  p { max-width:350px;color:#b9c1c7;line-height:1.5;margin:0; }
+</style>
+<article><h1>vallpaper.store · Hardware</h1><div id="mount"></div></article>
+<p>Standalone preview · sample readings.<br>Free VRAM is disabled here. Nothing is installed in ComfyUI.</p>
+<script type="module">
+  import {createMonitor} from './web/monitor.js';
+  const GiB = 1024 ** 3;
+  const sample = {cpu_percent:18,ram:{used_bytes:10.2*GiB,total_bytes:15.4*GiB,percent:66},comfy_ram_bytes:3.8*GiB,
+    gpus:[{name:'NVIDIA GeForce RTX 5060 Ti',load_percent:76,used_bytes:12.1*GiB,total_bytes:15.9*GiB,temperature_c:62,power_w:128,fan_percent:42}]};
+  const transport = async (path) => {
+    if (path.endsWith('/free')) return new Response(JSON.stringify({error:'Preview only. No models were unloaded.'}), {status:409});
+    return new Response(JSON.stringify(sample), {status:200});
+  };
+  window.monitor = createMonitor(window.testTransport || transport);
+  document.querySelector('#mount').appendChild(window.monitor.element);
+</script>
+</html>
