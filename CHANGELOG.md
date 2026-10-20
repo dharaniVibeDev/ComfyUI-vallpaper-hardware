@@ -1,5 +1,11 @@
 # Changelog
 
+## Automatic Run-button timing
+
+- Start timing automatically from ComfyUI's Run/Generate submission event and keyboard queue shortcuts.
+- Fall back to automatic execution-start timing when the submission event is unavailable.
+- Preserve the active timer when additional jobs are queued; the next local Run click re-arms after Stop/Reset.
+
 ## Timer update
 
 - Add **vallpaper.store · Timer** without changing the Hardware node name.

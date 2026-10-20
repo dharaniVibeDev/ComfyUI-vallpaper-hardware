@@ -43,13 +43,13 @@ Memory quantities use **GiB** (1 GiB = 1,073,741,824 bytes).
 
 *Standalone timer preview with simulated execution events.*
 
-1. Add **vallpaper.store · Timer** and click **Start**. It records the click time and starts counting immediately.
-2. Run a generation, or click Start while one is already running.
+1. Add **vallpaper.store · Timer**. Click ComfyUI's **Run / Generate** button (or its queue shortcut). The timer starts automatically through ComfyUI's `promptQueueing` event.
+2. The timer records the submission time. Its own **Start** button is an optional manual override, including for an already-running generation.
 3. On completion, the timer saves the start time, end time, duration, and result, then alerts you.
 4. It stays **armed**: the next queued generation starts a fresh timer automatically.
 5. **Stop** disarms timing. **Reset** disarms and clears timing/history. Neither button cancels generation.
 
-The first measured interval begins at your click. If you click before generation starts, that interval includes the wait; if you click mid-generation, it measures the remaining time. Subsequent queued jobs use their observed execution start times, excluding the gap between jobs.
+The first measured interval begins at your Run/Generate click, so it includes submission and queue waiting. A manual Start click mid-generation measures the remaining time. Subsequent queued jobs use their observed execution start times, excluding the gap between jobs. Adding more jobs while one is running does not reset the active timer. If a frontend does not expose the submission event, `execution_start` also starts the timer automatically at execution. Stop/Reset pause automatic execution-event attachment until the next local Run/Generate click or manual Start. A rejected submission that never executes can be stopped/reset manually.
 
 ### Alerts and history
 
@@ -134,7 +134,7 @@ It does not interrupt a render, close other applications, reset the GPU, or free
 | Free VRAM says to wait | Let running and queued jobs finish, then click again. |
 | VRAM stays partly occupied | The reading includes Windows and other apps. Some driver/context allocations also remain after cleanup. |
 | Monitor reports a connection error | Check the ComfyUI terminal and refresh after restarting. Requests time out rather than leaving the button stuck indefinitely. |
-| Timer does not start automatically | Click Start once to arm it. Stop and Reset disarm it. |
+| Timer does not start automatically | Refresh the browser to load the updated extension, then click ComfyUI Run/Generate. Start is an optional manual override. |
 | Timer does not make a sound | Check Sound, click Start to unlock browser audio, and check tab/system volume. |
 | Desktop alerts do not appear | Enable Desktop alert, allow notifications for your ComfyUI origin, and check OS notification settings. |
 

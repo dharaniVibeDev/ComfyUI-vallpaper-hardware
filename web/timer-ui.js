@@ -41,7 +41,7 @@ export function createTimer(api) {
           <label><input class="sound" type="checkbox" checked>Sound</label>
           <label><input class="desktop" type="checkbox">Desktop alert</label>
         </div>
-        <p class="status" role="status" aria-live="polite">Click Start before generation, or while it is running.</p>
+        <p class="status" role="status" aria-live="polite">Ready · click ComfyUI Run / Generate to start automatically.</p>
         <h2>Recent generations</h2>
         <table aria-label="Generation history"><thead><tr><th>Started</th><th>Result</th><th>Duration</th></tr></thead><tbody></tbody></table>
         <p class="empty">No recorded generations yet.</p>
@@ -60,6 +60,7 @@ export function createTimer(api) {
     let polling = false;
     let revision = 0;
     let messageUntil = 0;
+    let pausedByUser = false;
 
     function message(text, error = false) {
         status.textContent = text;
@@ -164,7 +165,12 @@ export function createTimer(api) {
         api.addEventListener(type, callback);
         listeners.push([type, callback]);
     }
-    listen('execution_start', (event) => observeStart(event.detail?.prompt_id, event.detail?.timestamp));
+    // ComfyUI emits this synchronously when Run/Generate or its shortcut queues work.
+    listen('promptQueueing', () => startTiming());
+    listen('execution_start', (event) => {
+        if (!session.armed && !pausedByUser) startTiming();
+        observeStart(event.detail?.prompt_id, event.detail?.timestamp);
+    });
     for (const type of Object.keys(outcomes)) listen(type, (event) => terminal(type, event.detail));
     listen('reconnected', () => reconcile());
 
@@ -198,24 +204,30 @@ export function createTimer(api) {
         } finally { polling = false; }
     }
 
-    startButton.addEventListener('click', () => {
+    function startTiming() {
+        if (disposed) return;
+        pausedByUser = false;
+        if (session.armed && session.active) return;
         revision++;
         session.start();
         if (sound.checked) unlockAudio();
         message('Timer started now. Waiting for a generation, or attaching to the current one.');
         render();
         reconcile();
-    });
+    }
+    startButton.addEventListener('click', startTiming);
     stopButton.addEventListener('click', () => {
         revision++;
+        pausedByUser = true;
         session.stop();
         message('Timer stopped. Generation is unaffected.');
         renderHistory();
     });
     root.querySelector('.reset').addEventListener('click', () => {
         revision++;
+        pausedByUser = true;
         session.reset();
-        message('Timer and history cleared. Click Start to record again.');
+        message('Timer cleared. The next Run / Generate click starts it automatically.');
         renderHistory();
     });
     sound.addEventListener('change', () => {if (sound.checked) unlockAudio();});

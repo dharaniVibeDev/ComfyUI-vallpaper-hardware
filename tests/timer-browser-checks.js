@@ -29,7 +29,8 @@ async page => {
     await page.getByLabel('Desktop alert', {exact: true}).check();
     if (await page.evaluate(() => window.permissionRequests) !== 1) throw new Error('Permission control failed');
     await page.getByLabel('Sound', {exact: true}).uncheck();
-    await start.click();
+    await page.evaluate(() => window.timerApi.dispatchEvent(new CustomEvent('promptQueueing', {detail:{requestId:1}})));
+    if (!await start.isDisabled()) throw new Error('ComfyUI Run did not start the timer automatically');
     await page.getByRole('button', {name: 'Simulate job', exact: true}).click();
     await page.waitForTimeout(1200);
     await page.getByRole('button', {name: 'Next queued job', exact: true}).click();

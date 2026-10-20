@@ -10,7 +10,10 @@ export class TimerSession {
     }
 
     start() {
-        if (this.armed) return;
+        if (this.armed) {
+            if (!this.active) this.active = {id: null, startedAt: this.now()};
+            return;
+        }
         this.armedAt = this.now();
         this.seen.clear();
         this.armed = true;
