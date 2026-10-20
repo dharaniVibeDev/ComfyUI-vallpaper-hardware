@@ -1,14 +1,21 @@
-# vallpaper.store · Hardware
+# vallpaper.store · Hardware + Timer
 
-A compact hardware monitor for ComfyUI, with a **Free VRAM** button that uses ComfyUI's own model-unload mechanism.
+A compact ComfyUI node pack: live hardware monitoring, **Free VRAM**, and a generation timer with completion alerts.
 
-Keep CPU, system RAM, GPU load, and VRAM visible beside your workflow. No node connections, separate dashboard, or account needed.
+Keep hardware usage and generation times beside your workflow. Both nodes work without connections, a separate dashboard, or an account.
+
+| Node | Purpose |
+| --- | --- |
+| **vallpaper.store · Hardware** | CPU, RAM, GPU, VRAM, thermal readings, and idle model cleanup |
+| **vallpaper.store · Timer** | Start/stop timing, queued-job handoff, recent durations, and completion alerts |
+
+## Hardware
 
 ![Hardware monitor preview showing CPU, RAM, GPU, VRAM, temperature, power, fan speed, and the Free VRAM button](docs/preview.png)
 
 *Standalone UI preview with sample readings. The installed node reads your hardware live.*
 
-## Features
+### Readings
 
 | Reading | What it measures |
 | --- | --- |
@@ -30,6 +37,39 @@ Keep CPU, system RAM, GPU load, and VRAM visible beside your workflow. No node c
 
 Memory quantities use **GiB** (1 GiB = 1,073,741,824 bytes).
 
+## Timer
+
+![Generation timer preview showing elapsed time, start/end timestamps, controls, notifications, and recent generations](docs/timer-preview.png)
+
+*Standalone timer preview with simulated execution events.*
+
+1. Add **vallpaper.store · Timer** and click **Start**. It records the click time and starts counting immediately.
+2. Run a generation, or click Start while one is already running.
+3. On completion, the timer saves the start time, end time, duration, and result, then alerts you.
+4. It stays **armed**: the next queued generation starts a fresh timer automatically.
+5. **Stop** disarms timing. **Reset** disarms and clears timing/history. Neither button cancels generation.
+
+The first measured interval begins at your click. If you click before generation starts, that interval includes the wait; if you click mid-generation, it measures the remaining time. Subsequent queued jobs use their observed execution start times, excluding the gap between jobs.
+
+### Alerts and history
+
+- **In-node alerts** show completion, the next generation starting, failures, and cancellations.
+- **Sound** plays a short two-beep alert when a generation ends. Start unlocks audio through your browser's normal user-gesture requirement. Sound can be switched off.
+- **Desktop alert** is optional. Enabling it asks for browser notification permission; the node does not request permission on its own. Completion and next-job notifications share a notification tag to avoid stacking rapid queue alerts.
+- History keeps the **10 most recent intervals**. Hover over a row for its full start/end timestamps and prompt ID.
+- A missed completion followed by an observed new job is labeled **Next job started**, rather than claiming the previous generation succeeded.
+
+The timer listens to ComfyUI execution events and checks the queue/current prompt history every three seconds while armed. This helps it attach to an already-running job and recover a missed completion. Stop, Reset, and node removal prevent late responses from restarting timing.
+
+### Timer limitations
+
+- Keep the browser page open and the timer node present. This is a browser-side timer, not a persistent server-side job recorder.
+- Timing and history reset on page reload. Each timer node has its own session and notifications.
+- While armed, it follows the **server queue**, including other workflows/clients that the queue polling observes.
+- A browser suspended through several short jobs may miss intermediate jobs. Queue polling cannot reconstruct an entire unseen session.
+- Desktop notifications depend on browser permission and OS notification settings. Sound depends on autoplay policy, browser audio, and system volume. In-node alerts work without either permission.
+- Times use wall-clock timestamps, not benchmark-grade profiling; system clock changes can affect durations. A poll-discovered job without a start event is timed from when it is observed.
+
 ## Installation
 
 From your ComfyUI `custom_nodes` directory:
@@ -41,6 +81,8 @@ git clone https://github.com/dharaniVibeDev/ComfyUI-vallpaper-hardware.git vallp
 Restart ComfyUI, then refresh the browser. Right-click the canvas and select:
 
 **Add Node → vallpaper.store → vallpaper.store · Hardware**
+
+or **Add Node → vallpaper.store → vallpaper.store · Timer**
 
 You can also search for **vallpaper** in node search. No inputs or outputs need connecting. The monitor runs independently of generation.
 
@@ -92,6 +134,9 @@ It does not interrupt a render, close other applications, reset the GPU, or free
 | Free VRAM says to wait | Let running and queued jobs finish, then click again. |
 | VRAM stays partly occupied | The reading includes Windows and other apps. Some driver/context allocations also remain after cleanup. |
 | Monitor reports a connection error | Check the ComfyUI terminal and refresh after restarting. Requests time out rather than leaving the button stuck indefinitely. |
+| Timer does not start automatically | Click Start once to arm it. Stop and Reset disarm it. |
+| Timer does not make a sound | Check Sound, click Start to unlock browser audio, and check tab/system volume. |
+| Desktop alerts do not appear | Enable Desktop alert, allow notifications for your ComfyUI origin, and check OS notification settings. |
 
 ## Privacy
 
@@ -104,8 +149,12 @@ __init__.py         Node registration and local API routes
 hardware.py         CPU/RAM collector and NVIDIA query parser
 web/hardware.js     ComfyUI canvas integration
 web/monitor.js      Monitor UI and cleanup action
-tests/              Hardware, route, and isolated browser checks
+web/timer.js        Timer canvas integration
+web/timer-state.js  Generation timing state machine
+web/timer-ui.js     Timer controls, alerts, history, and queue recovery
+tests/              Hardware, timing, route, and isolated browser checks
 preview.html        Standalone preview using labeled sample data
+timer-preview.html  Timer preview using simulated execution events
 ```
 
 Run tests with the Python environment used by ComfyUI:
@@ -116,13 +165,21 @@ python -m unittest discover -s tests -v
 
 Tests simulate the ComfyUI server. They cover unit conversion, unavailable GPU values, driver timeouts, idle cleanup requests, refusal during running/pending jobs, and shared sample caching. They never unload real models.
 
+Timer state tests use Node.js without installing npm dependencies:
+
+```bash
+node tests/timer-state.test.mjs
+```
+
+These cover click-time behavior, queued-job handoff, duplicate/stale events, fallback labeling, stop/reset, restarting during the same job, failures, cancellations, history limits, and elapsed time after delayed UI updates.
+
 For the visual preview, run the following **from this repository folder**, then open `http://127.0.0.1:8874/preview.html`:
 
 ```bash
 python -m http.server 8874 --bind 127.0.0.1
 ```
 
-The preview uses sample data and cannot unload models. The optional `tests/browser_checks.js` is a Playwright CLI `run-code` script; it requires that preview server and a separate test browser session.
+The hardware preview uses sample data and cannot unload models. Open `/timer-preview.html` on the same server for simulated timer controls. The optional `tests/browser_checks.js` and `tests/timer-browser-checks.js` are Playwright CLI `run-code` scripts; they require that preview server and a separate test browser session. Browser checks simulate notifications; they do not run generation or send OS notifications.
 
 ## Updates and removal
 

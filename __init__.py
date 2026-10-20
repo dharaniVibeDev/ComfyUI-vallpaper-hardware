@@ -21,8 +21,25 @@ class VallpaperHardware:
         return ()
 
 
-NODE_CLASS_MAPPINGS = {'VallpaperHardware': VallpaperHardware}
-NODE_DISPLAY_NAME_MAPPINGS = {'VallpaperHardware': 'vallpaper.store · Hardware'}
+class VallpaperTimer:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {'required': {}}
+
+    RETURN_TYPES = ()
+    FUNCTION = 'monitor'
+    CATEGORY = 'vallpaper.store'
+    DESCRIPTION = 'Start a generation timer, receive completion alerts, and track queued jobs. No connections needed. Stop affects timing only.'
+
+    def monitor(self):
+        return ()
+
+
+NODE_CLASS_MAPPINGS = {'VallpaperHardware': VallpaperHardware, 'VallpaperTimer': VallpaperTimer}
+NODE_DISPLAY_NAME_MAPPINGS = {
+    'VallpaperHardware': 'vallpaper.store · Hardware',
+    'VallpaperTimer': 'vallpaper.store · Timer',
+}
 WEB_DIRECTORY = './web'
 
 collector = HardwareCollector()

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>vallpaper.store · Timer preview</title>
+<link rel="icon" href="data:,">
+<style>
+  body {margin:0;min-height:100vh;display:grid;place-content:center;gap:16px;background:#17191b;color:#e9edef;font:13px system-ui,sans-serif}
+  article {width:360px;border:1px solid #59616a;border-radius:8px;overflow:hidden}
+  h1 {font:600 14px system-ui;margin:0;padding:11px 14px;background:#30363c}
+  #mount {height:410px}
+  p {max-width:360px;color:#b9c1c7;line-height:1.5;margin:0}
+  .simulate {display:flex;gap:8px} .simulate button {padding:8px;border:1px solid #65717a;border-radius:5px;background:#30383e;color:#f0f2f3;cursor:pointer}
+</style>
+<article><h1>vallpaper.store · Timer</h1><div id="mount"></div></article>
+<div class="simulate"><button id="begin">Simulate job</button><button id="finish">Finish job</button><button id="next">Next queued job</button></div>
+<p>Standalone preview · simulated execution events.<br>No connection to ComfyUI. No real generation or cleanup.</p>
+<script type="module">
+  import {createTimer} from './web/timer-ui.js';
+  const api = new EventTarget();
+  let running = null;
+  let index = 0;
+  const history = {};
+  api.fetchApi = async (path) => new Response(JSON.stringify(path === '/queue' ? {queue_running:running ? [[0,running]] : []} : path.startsWith('/history/') ? history : {}));
+  window.timerApi = api;
+  window.emitTimerEvent = (type, data) => api.dispatchEvent(new CustomEvent(type, {detail:data}));
+  window.timerUI = createTimer(api);
+  document.querySelector('#mount').appendChild(window.timerUI.element);
+  function begin() {running = `preview-${++index}`; window.emitTimerEvent('execution_start', {prompt_id:running,timestamp:Date.now()});}
+  function finish() {
+    if (!running) return;
+    const data = {prompt_id:running,timestamp:Date.now()};
+    history[running] = {status:{messages:[['execution_success',data]]}};
+    window.emitTimerEvent('execution_success', data); running = null;
+  }
+  document.querySelector('#begin').onclick = begin;
+  document.querySelector('#finish').onclick = finish;
+  document.querySelector('#next').onclick = () => {finish(); begin();};
+</script>
+</html>
