@@ -1,4 +1,4 @@
-![vallpaper.store HARDWARE + TIMER: WATCH THE LOAD. TIME THE RUN.](docs/brand/header.svg)
+![vallpaper.store HARDWARE + TIMER — three Krea 2 visual studies: a rainy racing scene, a stilt house and a helicopter rescue](docs/brand/header.jpg)
 
 # vallpaper.store · Hardware + Timer
 
