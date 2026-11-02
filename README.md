@@ -1,3 +1,5 @@
+![vallpaper.store HARDWARE + TIMER: WATCH THE LOAD. TIME THE RUN.](docs/brand/header.svg)
+
 # vallpaper.store · Hardware + Timer
 
 A compact ComfyUI node pack: live hardware monitoring, **Free VRAM**, and a generation timer with completion alerts.
@@ -8,6 +10,8 @@ Keep hardware usage and generation times beside your workflow. Both nodes work w
 | --- | --- |
 | **vallpaper.store · Hardware** | CPU, RAM, GPU, VRAM, thermal readings, and idle model cleanup |
 | **vallpaper.store · Timer** | Start/stop timing, queued-job handoff, recent durations, and completion alerts |
+
+**[Install](#installation)** · [Hardware preview](#hardware) · [Generation timer](#timer) · [Compatibility](#compatibility-and-limitations)
 
 ## Hardware
 
@@ -186,6 +190,18 @@ The hardware preview uses sample data and cannot unload models. Open `/timer-pre
 Update with `git pull` inside this repository folder, then restart ComfyUI and refresh the browser.
 
 To remove it, delete its folder from `custom_nodes` while ComfyUI is stopped, then restart. Remove monitor nodes from workflows that contain them.
+
+## More from vallpaper.store
+
+Tools built around AI visual production by [Dharanidharan K](https://github.com/dharaniVibeDev).
+
+| Project | What it covers |
+| --- | --- |
+| [Prompt Archive](https://github.com/dharaniVibeDev/comfyui-prompt-archive-docx) | Save previews, prompts and settings; review and restore mapped values. |
+| [Voice](https://github.com/dharaniVibeDev/ComfyUI-vallpaper-voice) | Direct dialogue, choose alternate takes and apply audio effects. |
+| [Hardware + Timer](https://github.com/dharaniVibeDev/ComfyUI-vallpaper-hardware) | Monitor hardware, time generations and receive completion alerts. |
+
+[Explore the creative portfolio](https://dharanis-portfolio-lilac.vercel.app) · [Watch the Prompt Archive demo](https://dharanis-portfolio-lilac.vercel.app/hire/prompt-archive-demo.mp4) · [He Heard You: production case study](https://dharanis-portfolio-lilac.vercel.app/work/he-heard-you-case-study.mp4)
 
 ## License
 
